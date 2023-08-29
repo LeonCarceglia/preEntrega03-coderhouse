@@ -1,0 +1,27 @@
+<h1>Products</h1>
+
+<div>
+  Hola, {{user.first_name}} {{user.last_name}}!
+</div>
+
+<ul>
+  {{#each products}}
+    <p>--------------------------------------------------</p>
+    <li>
+      <p>Title: {{title}}</p>
+      <p>Description: {{description}}</p>
+      <p>Price: {{price}}</p>
+      <p>Category: {{category}}</p>
+      <p>Quantity: {{stock}}</p>
+      <form id="addToCartForm" action="/api/carts/64b09f9498bfa511565d4563/product/{{this._id}}" method="POST" target="_self">
+        <input type="hidden" name="quantity" value="{{this.stock}}">
+        <input type="text" name="cartId" placeholder="Enter cartId">
+        <button type="submit">Add to Cart</button>
+      </form>
+    </li>
+  {{/each}}
+</ul>
+
+<div>
+  <a href="/logout">Logout</a> 
+</div>
