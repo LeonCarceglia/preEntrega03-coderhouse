@@ -2,18 +2,18 @@ import { Router } from "express"
 
 export default class CustomRouter {
     constructor() {
-        this.this = Router()
+        this.router = Router()
         this.init()
     }
 
     getRouter() {
-        return this.this
+        return this.router
     }
 
-    init() { } 
+    init(){} 
 
     get(path, policies, ...callbacks) {
-        this.this.get(
+        this.router.get(
             path,
             this.handlePolicies(policies),
             this.generateCustomResponses,
@@ -22,7 +22,7 @@ export default class CustomRouter {
     }
 
     post(path, policies, ...callbacks) {
-        this.this.post(
+        this.router.post(
             path,
             this.handlePolicies(policies),
             this.generateCustomResponses,
@@ -31,7 +31,7 @@ export default class CustomRouter {
     }
 
     put(path, policies, ...callbacks) {
-        this.this.put(
+        this.router.put(
             path,
             this.handlePolicies(policies),
             this.generateCustomResponses,
@@ -40,7 +40,7 @@ export default class CustomRouter {
     }
 
     delete(path, policies, ...callbacks) {
-        this.this.delete(
+        this.router.delete(
             path,
             this.handlePolicies(policies),
             this.generateCustomResponses,
@@ -56,10 +56,10 @@ export default class CustomRouter {
 
     handlePolicies = (policies) => {
         return (req, res, next) => {
+            const user = req.session.user
             if (policies[0] === "PUBLIC") return next()
             if (!policies.includes(user.role.toUpperCase()))
             return res.status(403).send({ status: "error", error: "Forbidden" })
-            req.user = user
             next()
         }
     }

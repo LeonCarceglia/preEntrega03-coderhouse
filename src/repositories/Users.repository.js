@@ -59,6 +59,15 @@ class UserRepository {
             throw(error)
         }
     }
+
+    async existUser(email){
+        try{
+            return this.dao.existUser(email)
+        }
+        catch(error){
+            throw(error)
+        }
+    }
 }
 
 export default UserRepository

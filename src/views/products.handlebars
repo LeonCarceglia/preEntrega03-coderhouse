@@ -5,22 +5,36 @@
 </div>
 
 <ul>
-  {{#each products}}
-    <p>--------------------------------------------------</p>
-    <li>
-      <p>Title: {{title}}</p>
-      <p>Description: {{description}}</p>
-      <p>Price: {{price}}</p>
-      <p>Category: {{category}}</p>
-      <p>Quantity: {{stock}}</p>
-      <form id="addToCartForm" action="/api/carts/64b09f9498bfa511565d4563/product/{{this._id}}" method="POST" target="_self">
-        <input type="hidden" name="quantity" value="{{this.stock}}">
-        <input type="text" name="cartId" placeholder="Enter cartId">
-        <button type="submit">Add to Cart</button>
+    {{#each products}}
+      <p>--------------------------------------------------</p>
+      <li>
+        <p>Title: {{title}}</p>
+        <p>Description: {{description}}</p>
+        <p>Price: {{price}}</p>
+        <p>Category: {{category}}</p>
+        <p>Quantity: {{stock}}</p>
+        <form
+        class="addToCartForm"
+        data-cart="{{this.cart}}"
+        data-product-id="{{this._id}}"
+        method="POST"
+        target="_self"
+      >
+        <label for="quantity">Quantity:</label>
+        <input
+          type="number"
+          class="quantity"
+          name="quantity"
+          min="1"
+          max="{{this.stock}}"
+          value="1"
+        >
+        <button type="submt" class="addToCartButton">Add to Cart</button>
       </form>
-    </li>
-  {{/each}}
-</ul>
+      </li>
+    {{/each}}
+  </ul>
+  <script src="/js/addProductToCart.js"></script>
 
 <div>
   <a href="/logout">Logout</a> 

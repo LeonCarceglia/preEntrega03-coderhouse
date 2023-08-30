@@ -5,19 +5,19 @@ import userController from "../controllers/users.controller.js"
 export default class SessionRouter extends CustomRouter{
   init(){
     this.post(
-      "/register",
+      "/register", ["PUBLIC"],
       passport.authenticate("register", { failureRedirect: "/failureRedirect" }),
       userController.registerUser)
 
     this.post(
-      "/login",
+      "/login", ["PUBLIC"],
       passport.authenticate("login", { failureRedirect: "/failureRedirect" }),
       userController.loginUser)
 
-    this.get("/github", passport.authenticate("github"), userController.github)
+    this.get("/github", ["PUBLIC"], passport.authenticate("github"), userController.github)
 
     this.get(
-      "/githubcallback",
+      "/githubcallback", ["PUBLIC"],
       passport.authenticate("github"),
       userController.githubCallback)
   }

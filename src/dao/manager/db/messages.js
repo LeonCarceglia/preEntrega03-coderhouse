@@ -1,12 +1,14 @@
 import messageModel from "../../models/message.js"
 
-export default class messageManager{
-
-    getMessages = () =>{
-        return messageModel.find().lean()
+export default class MessageManager {
+    constructor() {
     }
 
-    getMessage = (id) =>{
-        return messageModel.findById(id)
+    createMessage = (user, message) => {
+        return messageModel.create(user, message)
+    }
+
+    getMessage = () => {
+        return messageModel.find()
     }
 }

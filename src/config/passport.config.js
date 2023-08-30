@@ -1,6 +1,7 @@
 import passport from "passport"
 import local from "passport-local"
-import userModel from "../dao/models/user.js"
+import { userService } from "../services/index.js"
+import { cartService } from "../services/index.js"
 import GitHubStrategy from "passport-github2"
 import { createHash, isValidPassword } from "../utils.js"
 import config from "./config.js"
@@ -16,9 +17,9 @@ const initializePassport = () => {
         passReqToCallback: true,
       },
       async (req, username, password, done) => {
-        const { first_name, last_name, email, cart, age } = req.body
+        const { first_name, last_name, email, age } = req.body
         try {
-          const user = await userModel.findOne({ email: username })
+          const user = await userService.existUser(email)
           if (user) {
             return done(null, false, { message: "User already exists" })
           }
@@ -27,14 +28,14 @@ const initializePassport = () => {
             last_name,
             email,
             password: createHash(password),
-            cart,
+            cart: await cartService.createCart([]),
             age
           }
           if(username === config.ADMIN_USER && password === config.ADMIN_PASS){
             req.session.admin = true
             newUser.role = "admin"
           }
-          const result = await userModel.create(newUser)
+          const result = await userService.createUser(newUser)
           return done(null, result)
         } catch (error) {
           return done("Error getting user" + error)
@@ -51,7 +52,7 @@ const initializePassport = () => {
       },
       async (username, password, done) => {
         try {
-          const user = await userModel.findOne({ email: username })
+          const user = await userService.existUser(username)
           if (!user) {
             return done(null, false, { message: "User not found" })
           }
@@ -76,7 +77,7 @@ const initializePassport = () => {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          const user = await userModel.findOne({ email: profile._json.email })
+          const user = await userService.existUser(profile._json.email )
           if (!user) {
             const newUser = {
               first_name: profile._json.name.split(" ")[0],
@@ -84,7 +85,7 @@ const initializePassport = () => {
               email: profile._json.email,
               password: "",
             }
-            const result = await userModel.create(newUser)
+            const result = await userService.createUser(newUser)
             return done(null, result)
           } else {
             return done(null, user)
@@ -101,7 +102,7 @@ const initializePassport = () => {
   })
 
   passport.deserializeUser(async (id, done) => {
-    const user = userModel.findById(id)
+    const user = userService.getUser(id)
     done(null, user)
   })
 }

@@ -23,4 +23,8 @@ export default class UsersManager{
     deleteUser = (id) =>{
         return userModel.findByIdAndDelete(id)
     }
+
+    existUser = (email) =>{
+        return userModel.findOne({email})
+    }
 }

@@ -4,7 +4,7 @@ import handlebars from "express-handlebars"
 import mongoose from "mongoose"
 import MongoStore from "connect-mongo"
 import passport from "passport"
-import {Server} from "socket.io"
+import { Server } from "socket.io"
 
 import initializePassport from "./config/passport.config.js"
 
@@ -13,9 +13,8 @@ import ProductsRouter from "./routes/products.router.js"
 import CartsRouter from "./routes/carts.router.js"
 import SessionsRouter from "./routes/session.router.js"
 
-import __dirname from "./utils.js"
-import messageModel from "./dao/models/message.js"
-//import { socket } from "./utils.js"
+import {__dirname} from "./utils.js"
+import {initializeSocket} from "./utils.js"
 import config from "./config/config.js"
 
 const viewsRouter = new ViewsRouter()
@@ -27,16 +26,16 @@ const app = express()
 const connection = await mongoose.connect(config.MONGODB_URL)
 
 app.use(
-    session({
-      store: new MongoStore({
-        mongoUrl:
-          config.MONGODB_URL,
-        ttl: 3600,
-      }),
-      secret: "CoderS3cretFelis",
-      resave: false,
-      saveUninitialized: false,
-    })
+  session({
+    store: new MongoStore({
+      mongoUrl:
+        config.MONGODB_URL,
+      ttl: 3600,
+    }),
+    secret: "CoderS3cretFelis",
+    resave: false,
+    saveUninitialized: false,
+  })
 )
 
 app.engine("handlebars", handlebars.engine())
@@ -60,17 +59,4 @@ const httpServer = app.listen(config.PORT, () => {
 })
 
 const io = new Server(httpServer)
-io.on("connection", socket => {
-  console.log("New client coneccted")
-  socket.on("message", data => {
-    const newMessage = new messageModel({
-      user: data.user,
-      message: data.message
-    })
-    newMessage.save()
-      .then(() => messageModel.find())
-      .then(messages => {
-        io.emit("messageLogs", messages)
-      })
-  })
-})
+initializeSocket(io)

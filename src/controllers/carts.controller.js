@@ -20,7 +20,7 @@ const getCart = async (req,res) =>{
 
 const addProductToCart = async (req, res) =>{
     const ids = req.params
-    const {quantity} = req.body
+    const quantity = req.query.quantity
     const newCart = await cartService.addProductToCart(ids, quantity)
     res.status(201).json({status: "ok", success: newCart})
 }

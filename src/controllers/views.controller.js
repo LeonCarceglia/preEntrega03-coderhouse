@@ -4,7 +4,7 @@ import {userService} from "../services/index.js"
 
 
 const getProductsRender = async (req, res) => {
-    const user = req.session.user
+    const user = userService.getCurrentUser(req.session.user)
     const products = await productService.getProductsRender()
     const productsRender = products.docs.map((item) => {
         return {
@@ -13,10 +13,11 @@ const getProductsRender = async (req, res) => {
             price: item.price,
             category: item.category,
             stock: item.stock,
-            _id: item._id
+            _id: item._id,
+            cart: user.cart
         }
     })
-    res.render("products", { products: productsRender, user })
+    res.render("products", { products: productsRender, user})
 }
 
 const getCart = async (req, res) => {
@@ -41,7 +42,6 @@ const login = (req, res) => {
 
 const current = (req, res) => {
     const user = userService.getCurrentUser(req.session.user)
-    console.log(user)
     res.render('current', {user})
 }
 
