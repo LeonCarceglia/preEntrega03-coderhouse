@@ -1,4 +1,5 @@
 import cartModel from "../../models/cart.js"
+import mongoose from 'mongoose'
 
 export default class CartsManager {
 
@@ -11,16 +12,16 @@ export default class CartsManager {
 
     getCart = (id) => {
         return cartModel.findById(id)
-            .populate("type.product", "_id title description price stock")
+            .populate("products.product", "_id title description price stock")
             .lean()
     }
 
     createCart = (products = []) => {
-        return cartModel.create({ type: products })
+        return cartModel.create({ products })
     }
 
     updateCart = (id, cart) => {
-        return cartModel.findByIdAndUpdate(id, { type: cart })
+        return cartModel.findByIdAndUpdate(id, { products: cart })
     }
 
     deleteCart = (id) => {
@@ -30,11 +31,11 @@ export default class CartsManager {
     addProductToCart = (ids, quantity) => {
         cartModel.findById(ids.cid)
             .then(cart => {
-                const existingProduct = cart.type.find(item => item.product.equals(ids.pid))
-                if (existingProduct) {
-                    existingProduct.quantity += +quantity
+                const existingProductIndex = cart.products.findIndex(item => item.product._id == ids.pid)
+                if (existingProductIndex !== -1) {
+                    cart.products[existingProductIndex].quantity += +quantity
                 } else {
-                    cart.type.push({ product: ids.pid, quantity })
+                    cart.products.push({ product: ids.pid, quantity })
                 }
                 return cart.save()
             })
@@ -43,44 +44,42 @@ export default class CartsManager {
     deleteProduct = (ids) => {
         cartModel.findById(ids.cid)
             .then(cart => {
-                const productIndex = cart.type.findIndex(product => product === ids.pid)
-                cart.type.splice(productIndex, 1)
+                const productIndex = cart.products.findIndex(product => product === ids.pid)
+                cart.products.splice(productIndex, 1)
                 return cart.save()
             })
     }
 
     updateProductQuantity = (ids, quantity) => {
         return cartModel.findOneAndUpdate(
-            { _id: ids.cid, "type.product": ids.pid },
-            { $set: { "type.$.quantity": quantity } },
+            { _id: ids.cid, "products.product": ids.pid },
+            { $set: { "products.$.quantity": quantity } },
             { new: true }
         )
     }
 
     deleteProducts = (id) => {
-        return cartModel.findByIdAndUpdate(id, { type: [] })
+        return cartModel.findByIdAndUpdate(id, { products: [] })
     }
 
     purchase = async (id) => {
         try {
-            const cart = await cartModel.findById(id).populate("type.product", "_id title description price stock")
+            const cart = await cartModel.findById(id).populate("products.product", "_id title description price stock")
             let totalAmount = 0
-            const updatedType = cart.type.filter(item => {
+            const unstockProducts = []
+            for (const item of cart.products) {
                 if (item.product.stock < item.quantity) {
                     console.log(`Insufficient quantity for product: ${item.product.title}`)
-                    return false
+                    unstockProducts.push(item)
                 } else {
                     item.product.stock -= item.quantity
                     totalAmount += +item.product.price * item.quantity
-                    return true
                 }
-            })
-            cart.type = updatedType
-            console.log(totalAmount)
-            await cart.save()
+            }
+            await cartModel.findByIdAndUpdate(id, { products: unstockProducts })
             return totalAmount
         } catch (error) {
-            console.error('Error fetching or updating cart:', error)
+            console.error("Error in purchase", error)
             throw error
         }
     }
