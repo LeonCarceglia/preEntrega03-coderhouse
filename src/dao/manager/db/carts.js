@@ -1,5 +1,6 @@
 import cartModel from "../../models/cart.js"
-import mongoose from 'mongoose'
+import productModel from "../../models/product.js"
+import ticketsModel from "../../models/ticket.js"
 
 export default class CartsManager {
 
@@ -62,8 +63,9 @@ export default class CartsManager {
         return cartModel.findByIdAndUpdate(id, { products: [] })
     }
 
-    purchase = async (id) => {
+    purchase = async (id, user) => {
         try {
+            
             const cart = await cartModel.findById(id).populate("products.product", "_id title description price stock")
             let totalAmount = 0
             const unstockProducts = []
@@ -72,14 +74,16 @@ export default class CartsManager {
                     console.log(`Insufficient quantity for product: ${item.product.title}`)
                     unstockProducts.push(item)
                 } else {
-                    item.product.stock -= item.quantity
+                    const newStock = item.product.stock - item.quantity
+                    await productModel.findByIdAndUpdate(item.product._id, { stock: newStock })
                     totalAmount += +item.product.price * item.quantity
                 }
             }
-            await cartModel.findByIdAndUpdate(id, { products: unstockProducts })
+            cart.products = unstockProducts
+            await cart.save()
             return totalAmount
         } catch (error) {
-            console.error("Error in purchase", error)
+            console.error('Error fetching or updating cart:', error)
             throw error
         }
     }

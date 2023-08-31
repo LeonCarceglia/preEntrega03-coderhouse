@@ -55,7 +55,6 @@ const purchase = async (req,res) =>{
     const {cid} = req.params
     const user = req.session.user
     const amount = await cartService.purchase(cid)
-    console.log(user.email, amount)
     const ticket = await ticketService.createTicket(amount, user.email)
     res.json({status: "ok", data: ticket})
 }
