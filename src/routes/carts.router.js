@@ -19,6 +19,6 @@ export default class CartsRouter extends CustomRouter {
 
         this.delete("/:cid", ["PUBLIC"], cartsController.deleteProducts)
 
-        this.get("/:cid/purchase", ["PUBLIC"], cartsController.purchase)
+        this.post("/:cid/purchase", ["PUBLIC"], cartsController.purchase)
     }
 }
